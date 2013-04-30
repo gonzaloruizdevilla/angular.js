@@ -911,6 +911,7 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
   this.$valid = true;
   this.$invalid = false;
   this.$name = $attr.name;
+  this.$objectEquality = true;
 
   var ngModelGet = $parse($attr.ngModel),
       ngModelSet = ngModelGet.assign;
@@ -946,6 +947,10 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
     $element.
       removeClass((isValid ? INVALID_CLASS : VALID_CLASS) + validationErrorKey).
       addClass((isValid ? VALID_CLASS : INVALID_CLASS) + validationErrorKey);
+  }
+
+  this.$setCompareByEquality = function (value) {
+    this.$objectEquality = value;
   }
 
   /**
@@ -1038,8 +1043,8 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
       value = fn(value);
     });
 
-    if (this.$modelValue !== value) {
-      this.$modelValue = value;
+    if (this.$objectEquality ? !equals(this.$modelValue, value) : this.$modelValue !== value ) {
+      this.$modelValue = ctrl.$objectEquality ? copy(value) : value;
       ngModelSet($scope, value);
       forEach(this.$viewChangeListeners, function(listener) {
         try {
@@ -1058,12 +1063,12 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
     var value = ngModelGet($scope);
 
     // if scope model value and ngModel value are out of sync
-    if (ctrl.$modelValue !== value) {
+    if (ctrl.$objectEquality ? !equals(ctrl.$modelValue, value) : ctrl.$modelValue !== value) {
 
       var formatters = ctrl.$formatters,
           idx = formatters.length;
 
-      ctrl.$modelValue = value;
+      ctrl.$modelValue = ctrl.$objectEquality ? copy(value) : value;
       while(idx--) {
         value = formatters[idx](value);
       }

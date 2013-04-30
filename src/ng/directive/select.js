@@ -213,6 +213,9 @@ var selectDirective = ['$compile', '$parse', function($compile,   $parse) {
 
       selectCtrl.init(ngModelCtrl, nullOption, unknownOption);
 
+      //select must compare objects by reference, not by equality
+      ngModelCtrl.$setCompareByEquality(false);
+
       // required validator
       if (multiple && (attr.required || attr.ngRequired)) {
         var requiredValidator = function(value) {
